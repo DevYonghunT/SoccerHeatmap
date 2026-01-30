@@ -23,6 +23,11 @@ class MatchRepository {
     await box.put(match.id, match);
   }
 
+  /// 기존 매치 데이터를 업데이트합니다. (Hive에서는 키가 같으면 덮어쓰므로 saveMatch와 동일)
+  Future<void> updateMatch(MatchData match) async {
+    await saveMatch(match);
+  }
+
   Future<void> deleteMatch(String id) async {
     final box = await _getBox();
     await box.delete(id);
