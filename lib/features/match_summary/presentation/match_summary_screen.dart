@@ -13,12 +13,14 @@ import '../../../data/models/match_data.dart';
 import '../../../shared/widgets/accent_label.dart';
 
 class MatchSummaryScreen extends StatelessWidget {
-  const MatchSummaryScreen({super.key});
+  final MatchData? match;
+
+  const MatchSummaryScreen({super.key, this.match});
 
   @override
   Widget build(BuildContext context) {
-    // Assuming DummyData.lastMatch is of type MatchData
-    final match = DummyData.lastMatch;
+    // Use passed match data or fallback to DummyData
+    final matchData = match ?? DummyData.lastMatch;
     
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -37,7 +39,7 @@ class MatchSummaryScreen extends StatelessWidget {
                   ),
                   Text('경기 요약', style: AppTypography.bodyBold),
                   GestureDetector(
-                    onTap: () => _showShareOptions(context, match),
+                    onTap: () => _showShareOptions(context, matchData),
                     child: const Icon(LucideIcons.share2, color: AppColors.textPrimary, size: 20),
                   ),
                 ],
@@ -51,13 +53,13 @@ class MatchSummaryScreen extends StatelessWidget {
                   children: [
                     const SizedBox(height: 16),
                     // Match overview card
-                    _buildOverviewCard(match),
+                    _buildOverviewCard(matchData),
                     const SizedBox(height: 24),
                     // Heart Rate Zones
                     _buildHeartRateZones(),
                     const SizedBox(height: 24),
                     // Performance
-                    _buildPerformanceSection(match),
+                    _buildPerformanceSection(matchData),
                     const SizedBox(height: 24),
                     // Half Comparison
                     const AccentLabel(text: 'HALF COMPARISON'),

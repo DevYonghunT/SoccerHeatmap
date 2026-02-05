@@ -45,8 +45,9 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
-  hive_generator: ^2.0.1
-  build_runner: ^2.4.7
+  # hive_generator와 build_runner 제거됨
+  # - 수동 TypeAdapter 사용 중 (hive_adapters.dart)
+  # - 코드 생성 불필요
 
 flutter:
   uses-material-design: true

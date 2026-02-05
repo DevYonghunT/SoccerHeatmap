@@ -18,8 +18,10 @@ class LiveMatchScreen extends StatefulWidget {
 
 class _LiveMatchScreenState extends State<LiveMatchScreen> {
   bool _isRunning = true;
-  int _elapsedSeconds = 1938; // 32:18
   Timer? _timer;
+
+  // ValueNotifier로 타이머 영역만 리빌드
+  final ValueNotifier<int> _elapsedSeconds = ValueNotifier<int>(1938); // 32:18
 
   @override
   void initState() {
@@ -30,7 +32,7 @@ class _LiveMatchScreenState extends State<LiveMatchScreen> {
   void _startTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_isRunning) {
-        setState(() => _elapsedSeconds++);
+        _elapsedSeconds.value++;
       }
     });
   }
@@ -38,13 +40,14 @@ class _LiveMatchScreenState extends State<LiveMatchScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _elapsedSeconds.dispose();
     super.dispose();
   }
 
-  String get _formattedTime {
-    final minutes = (_elapsedSeconds ~/ 60).toString().padLeft(2, '0');
-    final seconds = (_elapsedSeconds % 60).toString().padLeft(2, '0');
-    return '$minutes:$seconds';
+  String _formatTime(int seconds) {
+    final minutes = (seconds ~/ 60).toString().padLeft(2, '0');
+    final secs = (seconds % 60).toString().padLeft(2, '0');
+    return '$minutes:$secs';
   }
 
   @override
@@ -62,12 +65,19 @@ class _LiveMatchScreenState extends State<LiveMatchScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    GestureDetector(
-                      onTap: () => context.pop(),
-                      child: const Icon(
-                        Icons.arrow_back_ios,
-                        color: AppColors.textPrimary,
-                        size: 20,
+                    Semantics(
+                      button: true,
+                      label: '뒤로 가기',
+                      child: IconButton(
+                        onPressed: () => context.pop(),
+                        icon: const Icon(
+                          Icons.arrow_back_ios,
+                          color: AppColors.textPrimary,
+                          size: 20,
+                        ),
+                        tooltip: '뒤로 가기',
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
                       ),
                     ),
                     _buildLiveBadge(),
@@ -81,10 +91,13 @@ class _LiveMatchScreenState extends State<LiveMatchScreen> {
                   child: Column(
                     children: [
                       const SizedBox(height: 24),
-                      // Timer
-                      LiveTimer(
-                        formattedTime: _formattedTime,
-                        halfLabel: '전반전',
+                      // Timer - ValueListenableBuilder로 타이머 영역만 리빌드
+                      ValueListenableBuilder<int>(
+                        valueListenable: _elapsedSeconds,
+                        builder: (context, seconds, _) => LiveTimer(
+                          formattedTime: _formatTime(seconds),
+                          halfLabel: '전반전',
+                        ),
                       ),
                       const SizedBox(height: 24),
                       // Heart Rate Card
@@ -106,40 +119,56 @@ class _LiveMatchScreenState extends State<LiveMatchScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Pause button
-                    GestureDetector(
-                      onTap: () {
-                        setState(() => _isRunning = !_isRunning);
-                      },
-                      child: Container(
-                        width: 64,
-                        height: 64,
-                        decoration: BoxDecoration(
+                    // Pause/Play button - 접근성 개선
+                    Semantics(
+                      button: true,
+                      label: _isRunning ? '일시정지' : '재생',
+                      child: Tooltip(
+                        message: _isRunning ? '일시정지' : '재생',
+                        child: Material(
                           color: AppColors.cardBackground,
                           borderRadius: BorderRadius.circular(32),
-                        ),
-                        child: Icon(
-                          _isRunning ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                          color: AppColors.textPrimary,
-                          size: 32,
+                          child: InkWell(
+                            onTap: () {
+                              setState(() => _isRunning = !_isRunning);
+                            },
+                            borderRadius: BorderRadius.circular(32),
+                            child: SizedBox(
+                              width: 64,
+                              height: 64,
+                              child: Icon(
+                                _isRunning ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                                color: AppColors.textPrimary,
+                                size: 32,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(width: 16),
-                    // Stop button
-                    GestureDetector(
-                      onTap: () => _showEndDialog(),
-                      child: Container(
-                        width: 64,
-                        height: 64,
-                        decoration: BoxDecoration(
+                    // Stop button - 접근성 개선
+                    Semantics(
+                      button: true,
+                      label: '경기 종료',
+                      child: Tooltip(
+                        message: '경기 종료',
+                        child: Material(
                           color: AppColors.primary,
                           borderRadius: BorderRadius.circular(32),
-                        ),
-                        child: const Icon(
-                          Icons.stop_rounded,
-                          color: AppColors.textPrimary,
-                          size: 32,
+                          child: InkWell(
+                            onTap: () => _showEndDialog(),
+                            borderRadius: BorderRadius.circular(32),
+                            child: const SizedBox(
+                              width: 64,
+                              height: 64,
+                              child: Icon(
+                                Icons.stop_rounded,
+                                color: AppColors.textPrimary,
+                                size: 32,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),

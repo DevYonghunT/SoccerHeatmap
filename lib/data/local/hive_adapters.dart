@@ -1,25 +1,46 @@
 import 'package:hive/hive.dart';
 import '../models/match_data.dart';
 
-// Type IDs
+// Type IDs - 절대 변경하지 말 것
 const int matchResultTypeId = 0;
 const int locationPointTypeId = 1;
 const int matchStatsTypeId = 2;
 const int fieldSizeTypeId = 3;
 const int matchDataTypeId = 4;
 
+/// MatchResult enum을 문자열로 저장하여 순서 변경에 안전
 class MatchResultAdapter extends TypeAdapter<MatchResult> {
   @override
   final int typeId = matchResultTypeId;
 
+  // enum 값을 문자열 키로 매핑 (순서 변경에 안전)
+  static const Map<String, MatchResult> _fromString = {
+    'win': MatchResult.win,
+    'lose': MatchResult.lose,
+    'draw': MatchResult.draw,
+  };
+
+  static String _toStringKey(MatchResult result) {
+    switch (result) {
+      case MatchResult.win:
+        return 'win';
+      case MatchResult.lose:
+        return 'lose';
+      case MatchResult.draw:
+        return 'draw';
+    }
+  }
+
   @override
   MatchResult read(BinaryReader reader) {
-    return MatchResult.values[reader.readInt()];
+    final key = reader.readString();
+    // 알 수 없는 값은 draw로 폴백 (데이터 손실 방지)
+    return _fromString[key] ?? MatchResult.draw;
   }
 
   @override
   void write(BinaryWriter writer, MatchResult obj) {
-    writer.writeInt(obj.index);
+    writer.writeString(_toStringKey(obj));
   }
 }
 
@@ -107,7 +128,7 @@ class MatchDataAdapter extends TypeAdapter<MatchData> {
     final durationMinutes = reader.readInt();
     final myScore = reader.readInt();
     final opponentScore = reader.readInt();
-    final result = MatchResult.values[reader.readInt()];
+    final result = reader.read() as MatchResult; // TypeAdapter가 처리
     final stats = reader.read() as MatchStats;
     final locationCount = reader.readInt();
     final locationHistory = <LocationPoint>[];
@@ -140,7 +161,7 @@ class MatchDataAdapter extends TypeAdapter<MatchData> {
     writer.writeInt(obj.durationMinutes);
     writer.writeInt(obj.myScore);
     writer.writeInt(obj.opponentScore);
-    writer.writeInt(obj.result.index);
+    writer.write(obj.result); // TypeAdapter가 처리
     writer.write(obj.stats);
     writer.writeInt(obj.locationHistory.length);
     for (final point in obj.locationHistory) {
@@ -153,10 +174,22 @@ class MatchDataAdapter extends TypeAdapter<MatchData> {
   }
 }
 
+/// Hive 어댑터 등록 (중복 등록 방지)
 void registerHiveAdapters() {
-  Hive.registerAdapter(MatchResultAdapter());
-  Hive.registerAdapter(LocationPointAdapter());
-  Hive.registerAdapter(MatchStatsAdapter());
-  Hive.registerAdapter(FieldSizeAdapter());
-  Hive.registerAdapter(MatchDataAdapter());
+  // 이미 등록된 어댑터는 건너뜀
+  if (!Hive.isAdapterRegistered(matchResultTypeId)) {
+    Hive.registerAdapter(MatchResultAdapter());
+  }
+  if (!Hive.isAdapterRegistered(locationPointTypeId)) {
+    Hive.registerAdapter(LocationPointAdapter());
+  }
+  if (!Hive.isAdapterRegistered(matchStatsTypeId)) {
+    Hive.registerAdapter(MatchStatsAdapter());
+  }
+  if (!Hive.isAdapterRegistered(fieldSizeTypeId)) {
+    Hive.registerAdapter(FieldSizeAdapter());
+  }
+  if (!Hive.isAdapterRegistered(matchDataTypeId)) {
+    Hive.registerAdapter(MatchDataAdapter());
+  }
 }

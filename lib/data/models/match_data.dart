@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:math';
 
 enum MatchResult { win, lose, draw }
@@ -58,11 +59,15 @@ class MatchData {
   final int opponentScore;
   final MatchResult result;
   final MatchStats stats;
-  final List<LocationPoint> locationHistory;
+  final List<LocationPoint> _locationHistory;
   final FieldSize? fieldSize;
   final String? matchName;
 
-  const MatchData({
+  /// 외부 수정 불가능한 locationHistory 반환
+  List<LocationPoint> get locationHistory =>
+      UnmodifiableListView(_locationHistory);
+
+  MatchData({
     required this.id,
     required this.date,
     required this.durationMinutes,
@@ -70,10 +75,10 @@ class MatchData {
     required this.opponentScore,
     required this.result,
     required this.stats,
-    this.locationHistory = const [],
+    List<LocationPoint> locationHistory = const [],
     this.fieldSize,
     this.matchName,
-  });
+  }) : _locationHistory = List.unmodifiable(locationHistory);
 
   /// 지정된 시간 범위로 경기 데이터를 자르고 통계를 재계산합니다.
   MatchData trim({required DateTime start, required DateTime end}) {

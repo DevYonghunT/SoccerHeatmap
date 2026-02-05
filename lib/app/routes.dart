@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../data/models/match_data.dart';
 import '../features/splash/presentation/splash_screen.dart';
 import '../features/dashboard/presentation/dashboard_screen.dart';
 import '../features/live_match/presentation/live_match_screen.dart';
@@ -73,8 +74,13 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: '/match-summary',
-      pageBuilder: (context, state) =>
-          _fadeTransitionPage(state: state, child: const MatchSummaryScreen()),
+      pageBuilder: (context, state) {
+        final match = state.extra as MatchData?;
+        return _fadeTransitionPage(
+          state: state,
+          child: MatchSummaryScreen(match: match),
+        );
+      },
     ),
     GoRoute(
       path: '/heatmap',

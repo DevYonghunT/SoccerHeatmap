@@ -40,43 +40,41 @@ class MatchListNotifier extends AsyncNotifier<List<MatchData>> {
   }
 }
 
+/// 주간 통계 Provider
+/// - 로딩/에러 상태를 그대로 전파하여 UI에서 구분 가능
+/// - matchListProvider 변경 시 자동 갱신
 final weeklyStatsProvider = FutureProvider<WeeklyStats>((ref) async {
-  // Depend on match list so it refreshes when matches change
-  final matches = ref.watch(matchListProvider);
-  return matches.when(
-    data: (matchList) {
-      if (matchList.isEmpty) return const WeeklyStats();
-      final now = DateTime.now();
-      final weekStart = now.subtract(Duration(days: now.weekday - 1));
-      final weekMatches = matchList
-          .where((m) =>
-              m.date.isAfter(weekStart.subtract(const Duration(days: 1))))
-          .toList();
-      if (weekMatches.isEmpty) return const WeeklyStats();
+  // matchListProvider를 await하여 로딩/에러 상태가 그대로 전파됨
+  final matches = await ref.watch(matchListProvider.future);
 
-      double totalDistance = 0;
-      int totalCalories = 0;
-      int totalSprints = 0;
-      double maxSpeed = 0;
+  if (matches.isEmpty) {
+    return const WeeklyStats();
+  }
 
-      for (final m in weekMatches) {
-        totalDistance += m.stats.totalDistanceKm;
-        totalCalories += m.stats.caloriesBurned;
-        totalSprints += m.stats.sprintCount;
-        if (m.stats.maxSpeedKmh > maxSpeed) maxSpeed = m.stats.maxSpeedKmh;
-      }
-
-      return WeeklyStats(
-        totalCalories: totalCalories,
-        totalDistanceKm: totalDistance,
-        matchCount: weekMatches.length,
-        totalSprints: totalSprints,
-        maxSpeedKmh: maxSpeed,
-      );
-    },
-    loading: () => const WeeklyStats(),
-    error: (_, __) => const WeeklyStats(),
-  );
+  // Repository를 통해 통계 계산
+  final repo = ref.read(matchRepositoryProvider);
+  return repo.getWeeklyStats();
 });
 
-final selectedMatchProvider = StateProvider<MatchData?>((ref) => null);
+/// 선택된 경기 ID만 저장 (메모리 경량화)
+final selectedMatchIdProvider = StateProvider<String?>((ref) => null);
+
+/// 선택된 경기 데이터 조회 (ID 기반)
+/// - selectedMatchIdProvider의 ID로 repository에서 조회
+/// - 캐시된 matchListProvider에서 먼저 찾고, 없으면 DB 조회
+final selectedMatchProvider = FutureProvider<MatchData?>((ref) async {
+  final id = ref.watch(selectedMatchIdProvider);
+  if (id == null) return null;
+
+  // 먼저 이미 로드된 목록에서 검색 (빠름)
+  final matchesAsync = ref.watch(matchListProvider);
+  final matches = matchesAsync.valueOrNull;
+  if (matches != null) {
+    final found = matches.where((m) => m.id == id).firstOrNull;
+    if (found != null) return found;
+  }
+
+  // 목록에 없으면 DB에서 직접 조회
+  final repo = ref.read(matchRepositoryProvider);
+  return repo.getMatch(id);
+});
