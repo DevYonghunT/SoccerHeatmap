@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>ko</string>
+	<key>CFBundleDisplayName</key>
+	<string>SoccerHeatmap</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>NSHealthShareUsageDescription</key>
+	<string>경기 중 심박수 데이터를 추적하고 운동 통계를 제공하기 위해 건강 데이터에 접근합니다.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>경기 워크아웃 세션을 기록하기 위해 건강 데이터에 접근합니다.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>경기 중 이동 경로를 추적하여 히트맵을 생성하기 위해 위치 정보가 필요합니다.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>경기 중 백그라운드에서도 정확한 이동 경로를 추적하기 위해 위치 정보가 필요합니다.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>걸음 수와 이동 유형을 감지하기 위해 모션 데이터에 접근합니다.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>히트맵 이미지를 사진 라이브러리에 저장하기 위해 접근합니다.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string></string>
+		<key>UIImageName</key>
+		<string></string>
+	</dict>
+	<key>CFBundleIconName</key>
+	<string>AppIcon</string>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UIUserInterfaceStyle</key>
+	<string>Dark</string>
+</dict>
+</plist>
